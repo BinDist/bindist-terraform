@@ -1,0 +1,45 @@
+# BinDist - Scaleway Dev Environment Configuration
+
+# Core
+project_name = "bindist"
+environment  = "dev"
+
+# Scaleway
+scaleway_project_id = "your-scaleway-project-id"
+scaleway_region     = "fr-par"
+scaleway_zone       = "fr-par-1"
+
+# Credentials (sensitive — use TF_VAR_ env vars in CI)
+scaleway_access_key  = "SCWxxxxxxxxxxxxxxxxx"
+scaleway_secret_key  = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+scaleway_iam_user_id = ""  # Get via: curl -sH "X-Auth-Token: $SCW_SECRET_KEY" https://api.scaleway.com/iam/v1alpha1/api-keys/$SCW_ACCESS_KEY | jq -r .user_id
+
+# Auth
+admin_customer_id = "admin"
+
+# Database (Serverless SQL)
+database_min_cpu = 0   # 0 = scale-to-zero
+database_max_cpu = 4
+
+# Object Storage
+s3_versioning_enabled = true
+
+# Functions
+function_memory_limit = 256  # MB
+function_timeout      = 30   # seconds
+function_min_scale    = 0
+function_max_scale    = 5
+
+# Storage Quota
+max_bucket_size_gb = 100
+
+# Custom Domain (optional)
+# To use a custom domain for the API gateway:
+#   1. Deploy once without custom_domain to get the gateway_domain_name output
+#   2. Create a CNAME record in your DNS provider:
+#      api.yourdomain.com  CNAME  <gateway_domain_name from terraform output>
+#   3. Set custom_domain below and re-deploy
+# custom_domain = "api.yourdomain.com"
+
+# Logging
+log_level = "info"

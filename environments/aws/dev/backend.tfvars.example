@@ -1,0 +1,12 @@
+# =============================================================================
+# Terraform Backend Configuration - Development Environment
+# =============================================================================
+# Copy this file to backend.tfvars after running ./setup-backend.sh
+#
+# The setup script will output the exact values to use.
+
+bucket         = "your-project-terraform-state"
+key            = "dev/terraform.tfstate"
+region         = "eu-west-1"
+dynamodb_table = "your-project-terraform-locks"
+encrypt        = true

@@ -1,0 +1,15 @@
+{
+  "name": "bindist",
+  "version": "1.0.0",
+  "description": "BinDist serverless binary/application distribution system. This root package.json exists only to declare the npm workspace layout — each provider (aws/, scaleway/) and the shared src/ each have their own package.json.",
+  "private": true,
+  "license": "MIT",
+  "workspaces": [
+    "src",
+    "aws",
+    "scaleway"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

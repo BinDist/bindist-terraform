@@ -1,0 +1,252 @@
+{
+	"info": {
+		"_postman_id": "bindist-customer-api",
+		"name": "BinDist Customer API",
+		"description": "Customer API collection for BinDist application distribution platform.\n\nThis collection covers the endpoints available to regular customers for browsing applications, versions, and downloading files.\n\n## Authentication\n\nAll endpoints require an API key provided by your administrator.\n\n**Header format:** `Authorization: Bearer {{api_key}}`\n\n## Variables\n\n- `base_url`: Your API endpoint (e.g., `https://api.bindist.eu`)\n- `api_key`: Your customer API key\n- `application_id`: Application ID for requests\n- `version`: Version string (e.g., `1.0.0`)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{api_key}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://api.bindist.eu",
+			"type": "string"
+		},
+		{
+			"key": "api_key",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "application_id",
+			"value": "myapp",
+			"type": "string"
+		},
+		{
+			"key": "version",
+			"value": "1.0.0",
+			"type": "string"
+		},
+		{
+			"key": "file_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Applications",
+			"description": "Endpoints for listing and viewing applications",
+			"item": [
+				{
+					"name": "List Applications",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/applications?page=1&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "applications"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Items per page (default: 20, max: 100)"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search by name or description",
+									"disabled": true
+								},
+								{
+									"key": "tag",
+									"value": "",
+									"description": "Filter by tag",
+									"disabled": true
+								},
+								{
+									"key": "isActive",
+									"value": "true",
+									"description": "Filter by active status",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Returns a list of applications you have access to.\n\nResults are paginated. Use `page` and `limit` parameters to navigate."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Application",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/applications/{{application_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "applications", "{{application_id}}"]
+						},
+						"description": "Returns details for a specific application including metadata and latest version info."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Versions",
+			"description": "Endpoints for viewing application versions",
+			"item": [
+				{
+					"name": "List Versions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Channel",
+								"value": "Test",
+								"description": "Set to 'Test' to include disabled versions",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/applications/{{application_id}}/versions",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "applications", "{{application_id}}", "versions"],
+							"query": [
+								{
+									"key": "changelog",
+									"value": "bugfix",
+									"description": "Search term to filter versions by release notes (case-insensitive)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Returns all versions for an application.\n\n**Query Parameters:**\n- `changelog`: Search term to filter versions by release notes content (case-insensitive)\n\n**X-Channel header:**\n- `Test`: Include disabled versions (for testing)\n- Other/missing: Only enabled versions (production)"
+					},
+					"response": []
+				},
+				{
+					"name": "List Version Files",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/applications/{{application_id}}/versions/{{version}}/files",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "applications", "{{application_id}}", "versions", "{{version}}", "files"]
+						},
+						"description": "Returns all files in a specific version.\n\n**File types:**\n- `MAIN`: Primary executable/installer\n- `DEPENDENCY`: Required libraries\n- `DOCUMENTATION`: Docs, readmes\n- `CONFIGURATION`: Config files"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Downloads",
+			"description": "Endpoints for downloading files",
+			"item": [
+				{
+					"name": "Get Download URL",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Channel",
+								"value": "Test",
+								"description": "Set to 'Test' to download disabled versions",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/downloads/url?applicationId={{application_id}}&version={{version}}",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "downloads", "url"],
+							"query": [
+								{
+									"key": "applicationId",
+									"value": "{{application_id}}",
+									"description": "Application ID (required)"
+								},
+								{
+									"key": "version",
+									"value": "{{version}}",
+									"description": "Version string (required)"
+								},
+								{
+									"key": "fileId",
+									"value": "{{file_id}}",
+									"description": "Specific file ID (optional, defaults to MAIN file)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Generates a pre-signed download URL.\n\n**URL validity:** 30 minutes\n\nThe response includes:\n- `url`: Pre-signed download URL\n- `fileName`: Original filename\n- `fileSize`: Size in bytes\n- `checksum`: SHA-256 checksum\n\n**Note:** If the version is disabled and `X-Channel: Test` is not set, returns HTTP 403."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Share Link",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"applicationId\": \"{{application_id}}\",\n  \"version\": \"{{version}}\",\n  \"expiresInMinutes\": 30\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/downloads/share",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "downloads", "share"]
+						},
+						"description": "Creates a publicly accessible download link.\n\nThe generated link:\n- Requires no authentication\n- Can be shared with anyone\n- Expires after the specified time (default: 30 minutes, max: 1440 minutes)\n\n**Fields:**\n- `applicationId`: Application ID (required)\n- `version`: Version string (required)\n- `fileId`: Specific file ID (optional, for multi-file versions)\n- `expiresInMinutes`: Link expiry time in minutes (optional, 5-1440, default: 30)"
+					},
+					"response": []
+				},
+				{
+					"name": "Public Download (No Auth)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/downloads/d/:token",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "downloads", "d", ":token"],
+							"variable": [
+								{
+									"key": "token",
+									"value": "",
+									"description": "Share token from Create Share Link response"
+								}
+							]
+						},
+						"description": "Download a file using a share link token.\n\n**No authentication required.**\n\nThis endpoint redirects (302) to a pre-signed S3 URL. Most HTTP clients will follow the redirect automatically."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

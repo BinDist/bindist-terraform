@@ -1,0 +1,35 @@
+{
+  "name": "bindist-aws",
+  "version": "1.0.0",
+  "description": "BinDist AWS Lambda build + runtime dependencies.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudwatch": "^3.470.0",
+    "@aws-sdk/client-dynamodb": "^3.470.0",
+    "@aws-sdk/client-s3": "^3.470.0",
+    "@aws-sdk/client-ses": "^3.470.0",
+    "@aws-sdk/client-sqs": "^3.946.0",
+    "@aws-sdk/lib-dynamodb": "^3.470.0",
+    "@aws-sdk/s3-request-presigner": "^3.470.0",
+    "joi": "^17.11.0",
+    "otpauth": "^9.5.0",
+    "ulid": "^3.0.2",
+    "uuid": "^14.0.0"
+  },
+  "devDependencies": {
+    "@bindist/dynamo-to-pg": "^1.0.0",
+    "@types/aws-lambda": "^8.10.131",
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
+    "pg": "^8.13.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

@@ -1,0 +1,20 @@
+# BinDist - Scaleway Backend Configuration
+#
+# Option 1: Local state (default — no backend.tfvars needed)
+#   Terraform will store state locally in terraform.tfstate.
+#   This is fine for development but not recommended for production.
+#
+# Option 2: S3-compatible backend on Scaleway Object Storage
+#   Uncomment and configure the settings below, then pass
+#   -backend-config=backend.tfvars to terraform init.
+#
+# bucket     = "your-project-terraform-state"
+# key        = "scaleway/dev/terraform.tfstate"
+# region     = "fr-par"
+# endpoints  = { s3 = "https://s3.fr-par.scw.cloud" }
+#
+# skip_credentials_validation = true
+# skip_region_validation      = true
+# skip_requesting_account_id  = true
+# skip_metadata_api_check     = true
+# skip_s3_checksum            = true
