@@ -115,6 +115,7 @@ async function getDownloadUrlHandler({ event, ctx }: HandlerContext) {
     userAgent: event.headers['user-agent'] || event.headers['User-Agent'] || 'unknown',
     downloadedAt: new Date().toISOString(),
     fileSize,
+    downloadSource: 'api',
   };
 
   await dynamo.recordDownload(ctx.tablePrefix, download);

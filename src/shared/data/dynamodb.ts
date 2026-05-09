@@ -68,8 +68,8 @@ export async function getPgPool(): Promise<PgPool> {
     poolPromise = (async () => {
       const pg: typeof PgModule = (await import('pg')).default;
       // pg returns BIGINT (OID 20) as a string by default to preserve precision
-      // past 2^53. Our BIGINT columns (fileSize, downloadCount, downloadDuration,
-      // ttl) are declared as `number` in the entity types and never approach
+      // past 2^53. Our BIGINT columns (fileSize, downloadCount, ttl) are
+      // declared as `number` in the entity types and never approach
       // Number.MAX_SAFE_INTEGER, so parse them back to numbers to match the
       // original DynamoDB-backed API contract.
       pg.types.setTypeParser(20, (val: string) => (val === null ? null : Number(val)));

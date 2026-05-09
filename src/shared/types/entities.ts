@@ -116,7 +116,8 @@ export interface Download {
   userAgent?: string;
   downloadedAt: string;
   fileSize?: number;
-  downloadDuration?: number;
+  downloadSource?: 'api' | 'share';
+  shareToken?: string;
   ttl?: number;
 }
 

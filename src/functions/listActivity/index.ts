@@ -28,6 +28,8 @@ interface ActivityItem {
   previousIp?: string;
   // Download-specific fields
   userAgent?: string;
+  downloadSource?: 'api' | 'share';
+  shareToken?: string;
 }
 
 async function listActivityHandler({ event, ctx }: AdminHandlerContext) {
@@ -97,6 +99,8 @@ async function listActivityHandler({ event, ctx }: AdminHandlerContext) {
         clientIp: download.clientIp,
         timestamp: download.downloadedAt,
         userAgent: download.userAgent,
+        downloadSource: download.downloadSource,
+        shareToken: download.shareToken,
       });
     }
   }

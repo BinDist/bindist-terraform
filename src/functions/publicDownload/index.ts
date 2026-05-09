@@ -148,6 +148,8 @@ export const handler = async (
       userAgent: event.headers['user-agent'] || event.headers['User-Agent'] || 'unknown',
       downloadedAt: new Date().toISOString(),
       fileSize: fileData.fileSize,
+      downloadSource: 'share',
+      shareToken: token,
     };
 
     await dynamo.recordDownload(tablePrefix, download);

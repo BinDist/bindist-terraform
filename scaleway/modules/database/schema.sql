@@ -81,7 +81,8 @@ CREATE TABLE IF NOT EXISTS downloads (
     "userAgent" TEXT,
     "downloadedAt" TEXT,
     "fileSize" BIGINT,
-    "downloadDuration" BIGINT,
+    "downloadSource" TEXT,
+    "shareToken" TEXT,
     "ttl" BIGINT,
     PRIMARY KEY ("applicationId", "downloadId")
 );
