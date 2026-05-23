@@ -18,8 +18,6 @@ import { LargeUploadUrlRequest, LargeUploadUrlResponse } from '../../shared/type
 import { AuditEventType, AuditOutcome } from '../../shared/types/audit.js';
 
 async function getLargeUploadUrlHandler({ event, ctx, body }: AdminHandlerContextWithBody<unknown>) {
-  console.log('Get large upload URL request');
-
   const request = validate<LargeUploadUrlRequest>(validation.largeUploadUrlRequestSchema, body);
 
   const { applicationId, version, fileName, fileSize, contentType } = request;

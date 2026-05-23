@@ -33,9 +33,6 @@ interface ActivityItem {
 }
 
 async function listActivityHandler({ event, ctx }: AdminHandlerContext) {
-  console.log('List activity request');
-
-  // Parse query parameters
   const queryParams = event.queryStringParameters || {};
   const type = (queryParams.type || 'all') as 'uploads' | 'downloads' | 'all';
   const limit = Math.min(parseInt(queryParams.limit || '50', 10), 100);

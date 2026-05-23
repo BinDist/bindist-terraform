@@ -31,10 +31,6 @@ function getApplicationsBucket(s3Prefix: string): string {
 export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  console.log('Public download request', {
-    pathParameters: event.pathParameters,
-  });
-
   try {
     const token = event.pathParameters?.token;
 

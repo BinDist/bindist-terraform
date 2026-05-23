@@ -31,8 +31,6 @@ export const handler = async (
   const channel = getChannel(event);
   const changelogSearch = event.queryStringParameters?.changelog?.trim().toLowerCase();
 
-  console.log('List versions request', { applicationId, channel, changelogSearch });
-
   try {
     const ctx = getTenantContext(event);
     if (!ctx) {

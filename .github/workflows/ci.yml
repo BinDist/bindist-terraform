@@ -47,6 +47,19 @@ jobs:
       - run: npm ci
       - run: npm run lint -w src
 
+  test-src:
+    name: Test shared source
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm test -w src
+
   validate-aws-terraform:
     name: Validate AWS Terraform
     runs-on: ubuntu-latest

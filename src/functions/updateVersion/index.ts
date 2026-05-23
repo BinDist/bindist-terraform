@@ -20,8 +20,6 @@ async function updateVersionHandler({ event, ctx, body }: AdminHandlerContextWit
   const applicationId = event.pathParameters?.applicationId;
   const version = event.pathParameters?.version;
 
-  console.log('Update version request', { applicationId, version });
-
   if (!applicationId) {
     return responses.badRequest('Application ID is required');
   }
@@ -75,12 +73,6 @@ async function updateVersionHandler({ event, ctx, body }: AdminHandlerContextWit
 
   // Save updated version
   await dynamo.putVersion(ctx.tablePrefix, updatedVersion);
-
-  console.log('Version updated', {
-    applicationId,
-    version,
-    updatedFields: Object.keys(request),
-  });
 
   return responses.success({
     message: 'Version updated successfully',

@@ -31,11 +31,6 @@ interface DownloadStats {
 export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  console.log('Get application stats request', {
-    pathParameters: event.pathParameters,
-    queryParams: event.queryStringParameters,
-  });
-
   try {
     const ctx = getTenantContext(event);
     if (!ctx) {

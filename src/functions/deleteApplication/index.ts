@@ -15,8 +15,6 @@ import { AuditEventType } from '../../shared/types/audit.js';
 async function deleteApplicationHandler({ event, ctx }: AdminHandlerContext) {
   const applicationId = event.pathParameters?.applicationId;
 
-  console.log('Delete application request', { applicationId });
-
   if (!applicationId) {
     return responses.badRequest('Application ID is required');
   }
@@ -45,11 +43,6 @@ async function deleteApplicationHandler({ event, ctx }: AdminHandlerContext) {
       applicationId,
       applicationName: application.name,
     },
-  });
-
-  console.log('Application soft deleted', {
-    applicationId,
-    deletedAt: deletedApplication.deletedAt,
   });
 
   return responses.success({

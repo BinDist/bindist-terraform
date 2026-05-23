@@ -15,6 +15,10 @@ BinDist is a secure binary/application distribution system that provides:
 
 Both providers expose an identical REST API. The shared `src/` handlers run unmodified on both — Scaleway uses a DynamoDB-to-SQL adapter that transparently translates all database calls to PostgreSQL.
 
+## Hosted Instance
+
+The official hosted BinDist instance is available at **`https://api.bindist.eu`**. The client scripts in `scripts/` and the Postman collection default to this URL. To use your own self-hosted deployment instead, set the `BINDIST_API_URL` environment variable (or pass `-ApiUrl`) to your API endpoint.
+
 ## Quick Start
 
 ### AWS
@@ -85,6 +89,10 @@ All endpoints are prefixed with `/v1/`. Authenticated endpoints require an `Auth
 ## Client Scripts
 
 PowerShell and bash scripts for managing applications, customers, and CI/CD uploads. See [scripts/README.md](scripts/README.md).
+
+## Postman Collection
+
+A Postman collection for the customer API is available at [docs/postman/BinDist-Customer-API.postman_collection.json](docs/postman/BinDist-Customer-API.postman_collection.json). Import it into Postman and set the `base_url` and `api_key` variables to get started.
 
 ## Project Structure
 

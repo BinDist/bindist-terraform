@@ -23,8 +23,6 @@ export const handler = async (
 ): Promise<APIGatewayProxyResult> => {
   const targetCustomerId = event.pathParameters?.customerId;
 
-  console.log('Create API key request', { targetCustomerId });
-
   try {
     const ctx = getTenantContext(event);
     if (!ctx) {

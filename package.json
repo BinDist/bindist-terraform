@@ -4,6 +4,24 @@
   "description": "BinDist serverless binary/application distribution system. This root package.json exists only to declare the npm workspace layout — each provider (aws/, scaleway/) and the shared src/ each have their own package.json.",
   "private": true,
   "license": "MIT",
+  "author": "BinDist",
+  "homepage": "https://github.com/BinDist/bindist-terraform#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BinDist/bindist-terraform.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BinDist/bindist-terraform/issues"
+  },
+  "keywords": [
+    "terraform",
+    "serverless",
+    "aws",
+    "scaleway",
+    "lambda",
+    "binary-distribution",
+    "s3"
+  ],
   "workspaces": [
     "src",
     "aws",

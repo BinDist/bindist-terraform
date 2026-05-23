@@ -38,10 +38,6 @@ function generateShortToken(): string {
 export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  console.log('Create share link request', {
-    body: event.body,
-  });
-
   try {
     const ctx = getTenantContext(event);
     if (!ctx) {

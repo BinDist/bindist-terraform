@@ -10,6 +10,8 @@ module.exports = {
   moduleNameMapper: {
     '^@shared/(.*)$': '<rootDir>/shared/$1',
     '^@functions/(.*)$': '<rootDir>/functions/$1',
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^uuid$': '<rootDir>/__mocks__/uuid.cjs',
   },
   collectCoverageFrom: [
     '**/*.ts',

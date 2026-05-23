@@ -71,7 +71,6 @@ export async function recordTenantEvent(
     })
   );
 
-  console.log(`Recorded tenant audit event: ${params.eventType} for tenant ${params.tenantId}`);
   return event;
 }
 

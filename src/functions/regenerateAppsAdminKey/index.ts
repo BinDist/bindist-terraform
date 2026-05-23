@@ -19,8 +19,6 @@ import { AuditEventType } from '../../shared/types/audit.js';
 const APPS_ADMIN_CUSTOMER_ID = 'admin-apps';
 
 async function regenerateAppsAdminKey({ ctx }: FinancialAdminHandlerContext) {
-  console.log('Regenerate apps-admin key request', { tenantId: ctx.tenantId });
-
   const customer = await dynamo.getCustomer(ctx.tablePrefix, APPS_ADMIN_CUSTOMER_ID);
   if (!customer) {
     return responses.notFound(`Apps-admin customer '${APPS_ADMIN_CUSTOMER_ID}' not found`);

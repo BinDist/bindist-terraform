@@ -61,16 +61,10 @@ interface Tenant {
 export const handler = async (
   event: APIGatewayTokenAuthorizerEvent
 ): Promise<APIGatewayAuthorizerResult> => {
-  console.log('Authorizer invoked', {
-    methodArn: event.methodArn,
-    mode: IS_MULTI_TENANT ? 'multi-tenant' : 'single-tenant'
-  });
-
   try {
     const apiKey = extractApiKey(event.authorizationToken);
 
     if (!apiKey) {
-      console.log('No API key provided');
       throw new Error('Unauthorized');
     }
 
@@ -80,16 +74,8 @@ export const handler = async (
       : await validateSingleTenantApiKey(apiKey);
 
     if (!authContext) {
-      console.log('Invalid API key');
       throw new Error('Unauthorized');
     }
-
-    console.log('Authentication successful', {
-      customerId: authContext.customerId,
-      isAdmin: authContext.isAdmin,
-      isFinancialAdmin: authContext.isFinancialAdmin,
-      mode: IS_MULTI_TENANT ? 'multi-tenant' : 'single-tenant',
-    });
 
     // Generate allow policy
     const wildcardResource = buildWildcardResource(event.methodArn);
@@ -128,19 +114,16 @@ async function validateSingleTenantApiKey(apiKey: string): Promise<AuthContext |
   // Look up API key
   const apiKeyRecord = await getApiKeyRecord(TABLE_PREFIX, apiKeyHash);
   if (!apiKeyRecord) {
-    console.log('API key not found');
     return null;
   }
 
   // Get customer
   const customer = await getCustomer(TABLE_PREFIX, apiKeyRecord.customerId);
   if (!customer) {
-    console.log('Customer not found:', apiKeyRecord.customerId);
     return null;
   }
 
   if (!customer.isActive) {
-    console.log('Customer not active:', customer.customerId);
     return null;
   }
 
@@ -168,14 +151,12 @@ async function validateMultiTenantApiKey(apiKey: string): Promise<AuthContext | 
   // Parse the API key
   const parsed = parseMultiTenantApiKey(apiKey);
   if (!parsed) {
-    console.log('Invalid multi-tenant API key format');
     return null;
   }
 
   // Look up tenant in control plane
   const tenant = await getTenant(parsed.tenantId);
   if (!tenant) {
-    console.log('Tenant not found:', parsed.tenantId);
     return null;
   }
 
@@ -187,7 +168,6 @@ async function validateMultiTenantApiKey(apiKey: string): Promise<AuthContext | 
     TenantStatus.ARCHIVED,
   ];
   if (!allowedStatuses.includes(tenant.status)) {
-    console.log('Tenant in invalid status:', tenant.tenantId, tenant.status);
     return null;
   }
 
@@ -195,25 +175,21 @@ async function validateMultiTenantApiKey(apiKey: string): Promise<AuthContext | 
   const secretHash = hashApiKey(parsed.secret);
   const apiKeyRecord = await getApiKeyRecord(tenant.tablePrefix, secretHash);
   if (!apiKeyRecord) {
-    console.log('API key not found in tenant table');
     return null;
   }
 
   // Get customer
   const customer = await getCustomer(tenant.tablePrefix, apiKeyRecord.customerId);
   if (!customer) {
-    console.log('Customer not found:', apiKeyRecord.customerId);
     return null;
   }
 
   if (!customer.isActive) {
-    console.log('Customer not active:', customer.customerId);
     return null;
   }
 
   // For archived tenants, only allow admin users (either tier)
   if ((tenant.status === TenantStatus.ARCHIVING || tenant.status === TenantStatus.ARCHIVED) && !customer.isAdmin) {
-    console.log('Non-admin access denied for archived tenant:', tenant.tenantId);
     return null;
   }
 
@@ -288,10 +264,7 @@ async function getApiKeyRecord(tablePrefix: string, apiKeyHash: string): Promise
       })
     );
     return (result.Item as ApiKeyRecord) || null;
-  } catch (error: unknown) {
-    if (error instanceof Error && error.name === 'ResourceNotFoundException') {
-      console.log(`API keys table not found: ${tableName}`);
-    }
+  } catch {
     return null;
   }
 }
@@ -309,10 +282,7 @@ async function getCustomer(tablePrefix: string, customerId: string): Promise<Cus
       })
     );
     return (result.Item as Customer) || null;
-  } catch (error: unknown) {
-    if (error instanceof Error && error.name === 'ResourceNotFoundException') {
-      console.log(`Customers table not found: ${tableName}`);
-    }
+  } catch {
     return null;
   }
 }

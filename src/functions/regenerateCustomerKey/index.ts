@@ -19,8 +19,6 @@ export const handler = async (
 ): Promise<APIGatewayProxyResult> => {
   const customerId = event.pathParameters?.customerId;
 
-  console.log('Regenerate customer key request', { customerId });
-
   try {
     const ctx = getTenantContext(event);
     if (!ctx) {

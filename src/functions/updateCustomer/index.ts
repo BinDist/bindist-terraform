@@ -16,8 +16,6 @@ import { AuditEventType } from '../../shared/types/audit.js';
 async function updateCustomerHandler({ event, ctx, body }: AdminHandlerContextWithBody<UpdateCustomerRequest>) {
   const customerId = event.pathParameters?.customerId;
 
-  console.log('Update customer request', { customerId });
-
   if (!customerId) {
     return responses.badRequest('Customer ID is required');
   }

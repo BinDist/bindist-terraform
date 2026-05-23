@@ -15,8 +15,6 @@ export const handler = async (
   const applicationId = event.pathParameters?.applicationId;
   const version = event.pathParameters?.version;
 
-  console.log('List version files request', { applicationId, version });
-
   try {
     const ctx = getTenantContext(event);
     if (!ctx) {

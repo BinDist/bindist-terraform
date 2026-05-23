@@ -42,7 +42,18 @@ The API key needs access to these Scaleway products:
 
 If you are the **Owner** of the Scaleway project, your key already has full access. Otherwise, create an IAM policy granting access to these three products and attach it to your API key's application or user.
 
-### 3. Region
+### 3. IAM User ID
+
+The `scaleway_iam_user_id` is needed for IAM policy bindings. Derive it from your API key by calling the Scaleway IAM API:
+
+```bash
+curl -sH "X-Auth-Token: $SCW_SECRET_KEY" \
+  https://api.scaleway.com/iam/v1alpha1/api-keys/$SCW_ACCESS_KEY | jq -r .user_id
+```
+
+Set `SCW_SECRET_KEY` and `SCW_ACCESS_KEY` to the values from step 2. Copy the resulting UUID into `scaleway_iam_user_id` in your `terraform.tfvars`.
+
+### 4. Region
 
 BinDist defaults to `fr-par` (Paris). Available Scaleway regions:
 

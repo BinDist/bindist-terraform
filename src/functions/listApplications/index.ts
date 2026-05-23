@@ -10,10 +10,6 @@ import { withAuth, HandlerContext } from '../../shared/utils/handlerUtils.js';
 import { ApplicationDto } from '../../shared/types/api.js';
 
 async function listApplicationsHandler({ event, ctx }: HandlerContext) {
-  console.log('List applications request', {
-    queryParams: event.queryStringParameters,
-  });
-
   const query = parseListQuery(event.queryStringParameters);
 
   if (ctx.isAdmin) {

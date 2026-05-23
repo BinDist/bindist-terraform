@@ -19,8 +19,6 @@ import { Version, ApplicationFile } from '../../shared/types/entities.js';
 import { UploadBinaryRequest } from '../../shared/types/api.js';
 
 async function uploadBinaryHandler({ event, ctx, body }: AdminHandlerContextWithBody<unknown>) {
-  console.log('Upload binary request');
-
   const request = validate<UploadBinaryRequest>(validation.uploadRequestSchema, body);
 
   const {

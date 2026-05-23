@@ -14,8 +14,6 @@ export const handler = async (
 ): Promise<APIGatewayProxyResult> => {
   const applicationId = event.pathParameters?.applicationId;
 
-  console.log('Get application request', { applicationId });
-
   try {
     const ctx = getTenantContext(event);
     if (!ctx) {

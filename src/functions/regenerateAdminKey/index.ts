@@ -18,8 +18,6 @@ import { AuditEventType } from '../../shared/types/audit.js';
 export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  console.log('Regenerate admin key request');
-
   try {
     const ctx = getTenantContext(event);
     if (!ctx) {

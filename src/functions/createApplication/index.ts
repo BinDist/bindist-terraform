@@ -28,8 +28,6 @@ const createApplicationSchema = Joi.object({
 });
 
 async function createApplicationHandler({ ctx, body }: AdminHandlerContextWithBody<unknown>) {
-  console.log('Create application request');
-
   const validated = validate<CreateApplicationRequest>(createApplicationSchema, body);
   const customerIds = validated.customerIds || [];
 
@@ -103,11 +101,6 @@ async function createApplicationHandler({ ctx, body }: AdminHandlerContextWithBo
       )
     );
   }
-
-  console.log('Application created', {
-    customerIds,
-    applicationId: validated.applicationId,
-  });
 
   const responseData = {
     applicationId: validated.applicationId,

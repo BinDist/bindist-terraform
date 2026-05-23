@@ -17,9 +17,6 @@ import { Version, ApplicationFile } from '../../shared/types/entities.js';
 import { CompleteLargeUploadRequest } from '../../shared/types/api.js';
 
 async function completeLargeUploadHandler({ event, ctx, body }: AdminHandlerContextWithBody<unknown>) {
-  console.log('Complete large upload request');
-
-  // Validate request
   const request = validate<CompleteLargeUploadRequest>(validation.completeLargeUploadRequestSchema, body);
 
   const {

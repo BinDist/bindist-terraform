@@ -34,11 +34,6 @@ function getChannel(event: APIGatewayProxyEvent): string | undefined {
 async function getDownloadUrlHandler({ event, ctx }: HandlerContext) {
   const channel = getChannel(event);
 
-  console.log('Get download URL request', {
-    queryParams: event.queryStringParameters,
-    channel,
-  });
-
   const params = validate<DownloadUrlParams>(
     validation.downloadUrlQuerySchema,
     event.queryStringParameters || {}

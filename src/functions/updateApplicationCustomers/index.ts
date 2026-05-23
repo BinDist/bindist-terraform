@@ -26,8 +26,6 @@ const updateCustomersSchema = Joi.object({
 async function updateApplicationCustomersHandler({ event, ctx, body }: AdminHandlerContextWithBody<unknown>) {
   const applicationId = event.pathParameters?.applicationId;
 
-  console.log('Update application customers request', { applicationId });
-
   if (!applicationId) {
     return responses.badRequest('Application ID is required');
   }

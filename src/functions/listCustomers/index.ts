@@ -13,8 +13,6 @@ import { getTenantContext } from '../../shared/utils/tenantContext.js';
 export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  console.log('List customers request');
-
   try {
     const ctx = getTenantContext(event);
     if (!ctx) {
