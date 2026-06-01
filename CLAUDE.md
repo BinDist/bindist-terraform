@@ -22,7 +22,7 @@ cd src && npm run package         # Build + zip for Lambda deployment
 cd src && npm test                # Run all Jest tests
 cd src && npm test -- --watch     # Watch mode
 cd src && npx jest path/to/file.test.ts   # Run a single test file
-cd src && npx jest --coverage     # Run with coverage report (70% threshold enforced)
+cd src && npx jest --coverage     # Run with coverage report (informational only; no threshold)
 ```
 
 ### Scaleway Adapter (scaleway/adapter/)
