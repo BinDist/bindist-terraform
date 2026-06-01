@@ -37,11 +37,16 @@ export async function authenticateRequest(
   const tablePrefix = process.env.TABLE_PREFIX || '';
   const tenantId = tablePrefix.replace(/-$/, '');
 
+  // Single-tenant is the customer's own dedicated deployment: no quotas.
+  // Emit the canonical TenantQuotas shape (GB + counts, 0 = unlimited) that
+  // quotaEnforcementService reads — not a bespoke maxStorageBytes/maxFileSize
+  // shape. The 0s resolve to "unlimited" via each check's `0 means unlimited`
+  // branch, making the no-limit behaviour deliberate rather than a field-name
+  // mismatch.
   const quotas = JSON.stringify({
-    maxApplications: 100,
-    maxVersionsPerApp: 1000,
-    maxFileSizeBytes: 5 * 1024 * 1024 * 1024, // 5 GB
-    maxStorageBytes: (parseInt(process.env.MAX_BUCKET_SIZE_GB || '100', 10)) * 1024 * 1024 * 1024,
+    maxStorageGb: 0,
+    maxApplications: 0,
+    maxCustomers: 0,
   });
 
   // Look up API key in database
