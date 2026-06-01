@@ -83,6 +83,18 @@ variable "custom_domain" {
   default     = ""
 }
 
+variable "enable_ttl_cleanup_cron" {
+  description = "Create the single-tenant TTL cleanup worker + daily cron. Defaults true for standalone single-tenant deploys; the multi-tenant control plane disables it and runs its own per-tenant sweep instead."
+  type        = bool
+  default     = true
+}
+
+variable "ttl_cleanup_schedule" {
+  description = "Cron schedule for the single-tenant TTL cleanup worker (UTC)."
+  type        = string
+  default     = "30 3 * * *"
+}
+
 variable "extra_environment_variables" {
   description = "Additional environment variables to set on the function namespace"
   type        = map(string)
