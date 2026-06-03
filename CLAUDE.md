@@ -18,12 +18,14 @@ cd src && npm run package         # Build + zip for Lambda deployment
 ```
 
 ### Tests (src/)
+Tests run on [Vitest](https://vitest.dev/) (native ESM — matches the `"type": "module"` source).
 ```bash
-cd src && npm test                # Run all Jest tests
-cd src && npm test -- --watch     # Watch mode
-cd src && npx jest path/to/file.test.ts   # Run a single test file
-cd src && npx jest --coverage     # Run with coverage report (70% threshold enforced)
+cd src && npm test                        # Run all tests once (vitest run)
+cd src && npm run test:watch              # Watch mode
+cd src && npx vitest run path/to/file.test.ts   # Run a single test file
 ```
+Vitest transpiles with esbuild and does not type-check the test run; `tsc` type
+errors are caught by the AWS/Scaleway build jobs in CI.
 
 ### Scaleway Adapter (scaleway/adapter/)
 ```bash

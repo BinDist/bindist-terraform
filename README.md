@@ -15,6 +15,8 @@ BinDist is a secure binary/application distribution system that provides:
 
 Both providers expose an identical REST API. The shared `src/` handlers run unmodified on both — Scaleway uses a DynamoDB-to-SQL adapter that transparently translates all database calls to PostgreSQL.
 
+BinDist has been in active development since December 2025 and ran in multi-tenant production use and a live Scaleway demo environment before being open-sourced.
+
 ## Hosted Instance
 
 The official hosted BinDist instance is available at **`https://api.bindist.eu`**. The client scripts in `scripts/` and the Postman collection default to this URL. To use your own self-hosted deployment instead, set the `BINDIST_API_URL` environment variable (or pass `-ApiUrl`) to your API endpoint.
