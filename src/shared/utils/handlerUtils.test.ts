@@ -18,6 +18,7 @@
  * highest tier, which is also an admin).
  */
 
+import { describe, test, expect, vi, beforeAll, afterAll, type MockInstance } from 'vitest';
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import {
   getControlPlaneAuth,
@@ -45,12 +46,12 @@ function makeEvent(opts: EventOpts = {}): APIGatewayProxyEvent {
   } as unknown as APIGatewayProxyEvent;
 }
 
-// A stand-in endpoint: always 200, and a jest.fn() so tests can assert it
+// A stand-in endpoint: always 200, and a vi.fn() so tests can assert it
 // was (or wasn't) reached and inspect the ctx/body it received. Typed `any`
 // so one stub fits every decorator shape.
 function okHandler() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return jest.fn(async (_context: any): Promise<APIGatewayProxyResult> => ({
+  return vi.fn(async (_context: any): Promise<APIGatewayProxyResult> => ({
     statusCode: 200,
     body: 'ok',
   }));
@@ -68,11 +69,11 @@ function errorOf(result: APIGatewayProxyResult): { code?: string; message?: stri
 }
 
 // Silence the console.error/warn the failure paths log on purpose.
-let errorSpy: jest.SpyInstance;
-let warnSpy: jest.SpyInstance;
+let errorSpy: MockInstance;
+let warnSpy: MockInstance;
 beforeAll(() => {
-  errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-  warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 afterAll(() => {
   errorSpy.mockRestore();
@@ -160,7 +161,7 @@ describe('withAuth', () => {
   test('converts a thrown handler error into a 500 envelope', async () => {
     // The gate must catch endpoint errors and return a standardized 500,
     // not leak the raw error.
-    const handler = jest.fn(async () => {
+    const handler = vi.fn(async () => {
       throw new Error('boom');
     });
     const endpoint = withAuth(handler);
