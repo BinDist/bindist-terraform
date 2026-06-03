@@ -32,41 +32,71 @@ export interface ApplicationListQuery {
 }
 
 /**
- * Validate a filename is safe (no paths, no dangerous characters)
+ * Windows reserved device names. These are reserved regardless of extension
+ * (`CON.txt` is still CON), so a file named this way breaks when a Windows
+ * client tries to save it. Matched against the base name (before the first dot).
+ */
+const WINDOWS_RESERVED_NAMES = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+
+/**
+ * Validate a filename is safe (no paths, no dangerous characters).
+ *
+ * The value is NFKC-normalized first so Unicode homoglyphs (e.g. fullwidth
+ * U+FF0E '．' / U+FF0F '／', one-dot-leader U+2024) fold to their ASCII forms
+ * and are caught by the checks below rather than slipping through. The
+ * normalized form is what we return and store, keeping a single canonical name.
+ *
+ * Files are served to Windows clients for download, so we also reject names
+ * that are illegal there (colon/ADS, the rest of the reserved character set,
+ * and reserved device names) even though they'd be harmless on the S3/Linux
+ * server itself.
  */
 function validateFileName(value: string, helpers: Joi.CustomHelpers) {
+  const normalized = value.normalize('NFKC');
+
   // Block path separators
-  if (value.includes('/') || value.includes('\\')) {
+  if (normalized.includes('/') || normalized.includes('\\')) {
     return helpers.error('string.pathSeparator');
   }
 
   // Block path traversal
-  if (value.includes('..')) {
+  if (normalized.includes('..')) {
     return helpers.error('string.pathTraversal');
   }
 
   // Block control characters (0x00-0x1F) and DEL (0x7F)
   // eslint-disable-next-line no-control-regex
-  if (/[\x00-\x1f\x7f]/.test(value)) {
+  if (/[\x00-\x1f\x7f]/.test(normalized)) {
     return helpers.error('string.controlChars');
   }
 
   // Block characters that break HTTP headers or are unsafe
-  if (/["'\r\n]/.test(value)) {
+  if (/["'\r\n]/.test(normalized)) {
     return helpers.error('string.headerUnsafe');
   }
 
+  // Block characters illegal on Windows (colon = drive/Alternate Data Stream,
+  // plus the rest of the reserved set) so a stored name can't break a download.
+  if (/[<>:|?*]/.test(normalized)) {
+    return helpers.error('string.windowsUnsafe');
+  }
+
   // Block leading/trailing dots (hidden files, extension-only names)
-  if (value.startsWith('.') || value.endsWith('.')) {
+  if (normalized.startsWith('.') || normalized.endsWith('.')) {
     return helpers.error('string.invalidDots');
   }
 
   // Block leading/trailing whitespace
-  if (value !== value.trim()) {
+  if (normalized !== normalized.trim()) {
     return helpers.error('string.untrimmed');
   }
 
-  return value;
+  // Block Windows reserved device names (CON, NUL, COM1, ...)
+  if (WINDOWS_RESERVED_NAMES.test(normalized.split('.')[0])) {
+    return helpers.error('string.windowsReserved');
+  }
+
+  return normalized;
 }
 
 /**
@@ -89,6 +119,8 @@ const patterns = {
       'string.headerUnsafe': '{{#label}} cannot contain quotes or newlines',
       'string.invalidDots': '{{#label}} cannot start or end with a dot',
       'string.untrimmed': '{{#label}} cannot have leading or trailing whitespace',
+      'string.windowsUnsafe': '{{#label}} cannot contain characters reserved on Windows (< > : | ? *)',
+      'string.windowsReserved': '{{#label}} cannot be a Windows reserved device name (e.g. CON, NUL, COM1)',
     }),
 };
 
@@ -233,6 +265,9 @@ export function parseListQuery(queryParams: Record<string, string | undefined> |
  */
 export function sanitizeFileName(fileName: string): string {
   const result = fileName
+    // Canonicalize first so Unicode homoglyphs (fullwidth '．'/'／', etc.) fold
+    // to ASCII and are caught by the replacements below.
+    .normalize('NFKC')
     // Replace path separators
     .replace(/[/\\]/g, '_')
     // Replace path traversal sequences
@@ -240,6 +275,9 @@ export function sanitizeFileName(fileName: string): string {
     // Replace control characters, DEL, and header-unsafe chars with underscore
     // eslint-disable-next-line no-control-regex
     .replace(/[\x00-\x1f\x7f"'\r\n]/g, '_')
+    // Replace characters illegal on Windows (colon = drive/ADS, etc.) so the
+    // name stays writable when a Windows client downloads it
+    .replace(/[<>:|?*]/g, '_')
     // Trim whitespace
     .trim()
     // Replace leading/trailing dots
@@ -250,7 +288,14 @@ export function sanitizeFileName(fileName: string): string {
     .replace(/^_+|_+$/g, '');
 
   // Ensure non-empty (fallback to 'file' if completely sanitized away)
-  return result || 'file';
+  const safe = result || 'file';
+
+  // Neutralize Windows reserved device names (CON, NUL, COM1, ...), which are
+  // reserved regardless of extension, by prefixing an underscore.
+  if (WINDOWS_RESERVED_NAMES.test(safe.split('.')[0])) {
+    return `_${safe}`;
+  }
+  return safe;
 }
 
 export const validation = {
