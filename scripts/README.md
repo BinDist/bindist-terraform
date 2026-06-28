@@ -13,6 +13,7 @@ scripts/
     ├── Add-Application.ps1    # Register applications
     ├── Add-Customer.ps1       # Create customers
     ├── Download-File.ps1      # Download files
+    ├── Link-Customer.ps1      # Link/unlink customers to an application
     ├── List-Applications.ps1  # List available apps
     ├── List-Versions.ps1      # List versions
     └── New-ShareLink.ps1      # Create shareable download links
@@ -25,16 +26,26 @@ scripts/
 
 ## Environment Variables
 
+Every script accepts credentials either as a single API key or as a tenant
+ID + secret pair. If the matching parameters are not passed explicitly, the
+scripts fall back to these environment variables:
+
 ```powershell
 # API endpoint URL (optional - defaults to https://api.bindist.eu)
 $env:BINDIST_API_URL = "https://api.bindist.eu"
 
-# Customer API key (for tenant scripts)
-$env:API_KEY = "your-customer-api-key"
+# Single-tenant mode: full API key (-ApiKey)
+$env:API_KEY = "your-api-key"
 
-# Admin API key (for admin/CI scripts)
-$env:ADMIN_API_KEY = "your-admin-api-key"
+# Multi-tenant mode: tenant ID + secret (-TenantId / -Secret)
+$env:TENANT_ID = "your-tenant-id"
+$env:API_SECRET = "your-api-secret"
 ```
+
+Admin operations (creating customers, registering applications, linking
+customers, and the CI scripts) require a key with admin privileges. There is
+no separate `ADMIN_API_KEY` variable—supply an admin-privileged key via
+`API_KEY` (or `TENANT_ID`/`API_SECRET`).
 
 **Note:** The `-ApiUrl` parameter defaults to `https://api.bindist.eu` if `BINDIST_API_URL` is not set.
 
@@ -42,7 +53,7 @@ $env:ADMIN_API_KEY = "your-admin-api-key"
 
 ## CI Scripts
 
-Located in `ci-scripts/`. Scripts for CI/CD pipelines. Require admin API key.
+Located in `ci-scripts/`. Scripts for CI/CD pipelines. Require an admin-privileged key.
 
 ### Upload-Application.ps1
 
@@ -52,8 +63,8 @@ Uploads a new version of an application. Use in CI/CD to publish releases.
 # Basic usage
 .\ci-scripts\Upload-Application.ps1 -ApplicationId "myapp" -Version "1.0.0" -FilePath ".\myapp.exe"
 
-# With options
-.\ci-scripts\Upload-Application.ps1 -ApplicationId "myapp" -Version "2.0.0" -FilePath ".\myapp.exe" -ReleaseNotes "Bug fixes" -RequiredTier Premium
+# With release notes
+.\ci-scripts\Upload-Application.ps1 -ApplicationId "myapp" -Version "2.0.0" -FilePath ".\myapp.exe" -ReleaseNotes "Bug fixes"
 ```
 
 ### Update-Version.ps1
@@ -74,12 +85,13 @@ Updates metadata for an existing application version (release notes, active/enab
 
 Located in `tenant-scripts/`. Scripts for tenant management and customer access.
 
-Admin scripts (Add-Customer, Add-Application) require `ADMIN_API_KEY`.
-Customer scripts (List-*, Download-*, New-ShareLink) require `API_KEY`.
+Admin scripts (Add-Customer, Add-Application, Link-Customer) require an admin-privileged key.
+Customer scripts (List-*, Download-*, New-ShareLink) work with any customer key.
+Either pass `-ApiKey` (or `-TenantId`/`-Secret`) explicitly or set the corresponding environment variables.
 
 ### Add-Customer.ps1
 
-Creates a new customer with an API key. Requires `ADMIN_API_KEY`.
+Creates a new customer with an API key. Requires an admin-privileged key.
 
 ```powershell
 # Basic usage
@@ -91,7 +103,7 @@ Creates a new customer with an API key. Requires `ADMIN_API_KEY`.
 
 ### Add-Application.ps1
 
-Registers a new application and assigns it to customers. Requires `ADMIN_API_KEY`.
+Registers a new application and assigns it to customers. Requires an admin-privileged key.
 
 ```powershell
 # Basic usage
@@ -99,6 +111,21 @@ Registers a new application and assigns it to customers. Requires `ADMIN_API_KEY
 
 # With multiple customers and options
 .\tenant-scripts\Add-Application.ps1 -ApplicationId "myapp" -Name "My App" -CustomerIds "admin-abc123,admin-def456" -Description "A great app" -Tags "windows,desktop"
+```
+
+### Link-Customer.ps1
+
+Grants or revokes customer access to an existing application. Requires an admin-privileged key.
+
+```powershell
+# Grant access
+.\tenant-scripts\Link-Customer.ps1 -ApplicationId "myapp" -AddCustomerIds "admin-abc123,admin-def456"
+
+# Revoke access
+.\tenant-scripts\Link-Customer.ps1 -ApplicationId "myapp" -RemoveCustomerIds "admin-abc123"
+
+# Grant and revoke in one call
+.\tenant-scripts\Link-Customer.ps1 -ApplicationId "myapp" -AddCustomerIds "admin-def456" -RemoveCustomerIds "admin-abc123"
 ```
 
 ### List-Applications.ps1
@@ -129,6 +156,9 @@ Lists versions for an application. Requires `API_KEY`.
 # List all versions
 .\tenant-scripts\List-Versions.ps1 -ApplicationId "myapp"
 
+# Filter by release channel
+.\tenant-scripts\List-Versions.ps1 -ApplicationId "myapp" -Channel "Test"
+
 # JSON output
 .\tenant-scripts\List-Versions.ps1 -ApplicationId "myapp" -Format json
 ```
@@ -146,6 +176,9 @@ Downloads a file from the distribution system. Requires `API_KEY`.
 
 # Download specific file (multi-file versions)
 .\tenant-scripts\Download-File.ps1 -ApplicationId "myapp" -Version "1.0.0" -FileId "file-123"
+
+# Download from a specific release channel
+.\tenant-scripts\Download-File.ps1 -ApplicationId "myapp" -Version "1.0.0" -Channel "Test"
 
 # Skip checksum verification
 .\tenant-scripts\Download-File.ps1 -ApplicationId "myapp" -Version "1.0.0" -SkipChecksumVerification
@@ -179,6 +212,8 @@ Most scripts support multiple output formats:
 | `csv` | CSV output for spreadsheets |
 | `object` | PowerShell objects for piping |
 
+`List-Applications` and `List-Versions` support all four formats; `New-ShareLink` supports `table`, `json`, and `object` (no `csv`).
+
 ---
 
 ## Examples
@@ -186,9 +221,9 @@ Most scripts support multiple output formats:
 ### Complete workflow
 
 ```powershell
-# Set environment variables
+# Set environment variables (use an admin-privileged key for the admin steps below)
 $env:BINDIST_API_URL = "https://api.example.com/dev"
-$env:ADMIN_API_KEY = "admin-key-here"
+$env:API_KEY = "admin-key-here"
 
 # Create a customer
 $customer = .\tenant-scripts\Add-Customer.ps1 -Name "New Customer" -Tier Premium
@@ -217,7 +252,7 @@ $env:API_KEY = $customer.apiKey
   shell: pwsh
   env:
     BINDIST_API_URL: ${{ secrets.BINDIST_API_URL }}
-    ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
+    API_KEY: ${{ secrets.BINDIST_ADMIN_API_KEY }}
   run: |
     .\scripts\ci-scripts\Upload-Application.ps1 `
       -ApplicationId "myapp" `
