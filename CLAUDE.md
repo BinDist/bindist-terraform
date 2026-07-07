@@ -8,30 +8,40 @@ BinDist is a serverless binary/application distribution system deployed via Terr
 
 ## Common Commands
 
-### Build & Lint (src/)
+The repo is a single npm workspace (root `package.json` with `workspaces: [src, aws, scaleway]`).
+Run `npm ci` **once at the repo root**; it hoists deps for every workspace. Provider
+builds compile `src/` themselves via their own `tsconfig.json` (there is no `build`
+script in `src/`).
+
+### Build & Lint
 ```bash
-cd src && npm ci                  # Install dependencies
-cd src && npm run build           # TypeScript compile + copy templates
-cd src && npm run lint            # ESLint check
-cd src && npm run lint:fix        # ESLint auto-fix
-cd src && npm run package         # Build + zip for Lambda deployment
+npm ci                      # Install all workspace deps (run at repo root)
+
+npm run build -w aws        # TypeScript compile of src/ using aws/tsconfig.json
+npm run build -w scaleway   # TypeScript compile of src/ + scaleway/src adapter
+npm run lint -w src         # ESLint the shared source
+npm run lint:fix -w src     # ESLint auto-fix
+
+aws/build.sh                # Compile + install prod deps + zip -> aws/function.zip
+scaleway/build.sh           # Same, producing scaleway/function.zip
 ```
+Note: a runtime dependency imported from `src/` must also be listed in
+`aws/package.json` and `scaleway/package.json` — the deployment zip's `node_modules`
+is resolved from the provider manifest, not from `src/package.json`.
 
 ### Tests (src/)
 Tests run on [Vitest](https://vitest.dev/) (native ESM — matches the `"type": "module"` source).
 ```bash
-cd src && npm test                        # Run all tests once (vitest run)
-cd src && npm run test:watch              # Watch mode
+npm test -w src                           # Run all tests once (vitest run)
+npm run test:watch -w src                 # Watch mode
 cd src && npx vitest run path/to/file.test.ts   # Run a single test file
 ```
 Vitest transpiles with esbuild and does not type-check the test run; `tsc` type
 errors are caught by the AWS/Scaleway build jobs in CI.
 
-### Scaleway Adapter (scaleway/adapter/)
-```bash
-cd scaleway/adapter && npm ci && npm run build
-cd scaleway/adapter && npm run lint
-```
+### Scaleway Adapter (scaleway/src/)
+The adapter (`scaleway/src/dynamo-to-sql.ts`) is compiled as part of the Scaleway
+build above; it has no separate package. Lint it with `npm run lint -w scaleway`.
 
 ### Terraform
 ```bash
@@ -54,7 +64,7 @@ cd tests && python3 run_tests.py
 ### Dual-Provider, Shared Source
 - **`src/`** — Shared TypeScript handlers and business logic. Written against AWS SDK interfaces.
 - **`aws/`** — Terraform root module deploying separate Lambda functions behind API Gateway, with DynamoDB and S3.
-- **`scaleway/`** — Terraform root module deploying a single serverless function. The `scaleway/adapter/` layer translates DynamoDB SDK calls to PostgreSQL and routes all HTTP requests through one entry point.
+- **`scaleway/`** — Terraform root module deploying a single serverless function. The `scaleway/src/` layer translates DynamoDB SDK calls to PostgreSQL and routes all HTTP requests through one entry point.
 
 This means the same `src/` code runs unmodified on both providers. The Scaleway adapter (`dynamo-to-sql.ts`) intercepts DynamoDB SDK operations and converts them to SQL.
 
@@ -90,7 +100,7 @@ Uses Joi schemas in `src/shared/utils/validation.ts`.
 ## Key Conventions
 
 - TypeScript strict mode with path aliases: `@shared/*` → `src/shared/*`, `@functions/*` → `src/functions/*`
-- Node.js >= 20 required
+- Node.js >= 22 required (`engines` in every `package.json`)
 - ESLint allows `any` types; unused variables must be prefixed with `_`
 - Terraform formatting enforced (`terraform fmt -check -recursive`)
-- CI runs four parallel jobs: build-aws, build-scaleway, validate-aws-terraform, validate-scaleway-terraform
+- CI (`.github/workflows/ci.yml`) runs the build, lint, test, and terraform-validate jobs in parallel for each provider

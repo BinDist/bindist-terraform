@@ -24,6 +24,7 @@ import {
 import { TenantApiKey } from '../types/tenantAuth.js';
 import { ApplicationsListQuery, PaginationMeta } from '../types/api.js';
 import { DOWNLOAD_RECORDS_TTL_SECONDS, UPLOAD_RECORDS_TTL_SECONDS, calculateTtl } from '../config/constants.js';
+import { sortVersionsDescending } from '../utils/versionSort.js';
 
 /**
  * Tenant-scoped share token (stored in tenant's share-tokens table)
@@ -639,8 +640,9 @@ export async function listVersions(
   // Filter to active only
   versions = versions.filter((v) => v.isActive);
 
-  // Sort by version descending (newest first)
-  versions.sort((a, b) => b.version.localeCompare(a.version, undefined, { numeric: true }));
+  // Sort by version descending (newest first). Prefer semver ordering; fall
+  // back to numeric-aware alphabetical when the list isn't all valid semver.
+  sortVersionsDescending(versions);
 
   return versions;
 }
