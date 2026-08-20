@@ -41,10 +41,42 @@ describe('sortVersionsDescending', () => {
     test('accepts a leading v prefix', () => {
       expect(order(['v1.0.0', 'v2.0.0', 'v1.5.0'])).toEqual(['v2.0.0', 'v1.5.0', 'v1.0.0']);
     });
+
+    test('CalVer (padded or not) sorts newest-first', () => {
+      // Zero-padded segments are not strict semver, but they carry precedence, so
+      // the policy parses them rather than dropping the list to alphabetical.
+      expect(order(['2025.02', '2024.12', '2025.10', '2025.01'])).toEqual([
+        '2025.10',
+        '2025.02',
+        '2025.01',
+        '2024.12',
+      ]);
+      expect(order(['2025.01.0', '2025.10.0', '2024.12.0'])).toEqual([
+        '2025.10.0',
+        '2025.01.0',
+        '2024.12.0',
+      ]);
+    });
+
+    test('a padded CalVer release outranks its own pre-release', () => {
+      // The regression this policy exists to fix: alphabetically "2025.01.0" is a
+      // prefix of "2025.01.0-rc.1", so the fallback ranked the shipped release last.
+      expect(order(['2025.01.0', '2025.01.0-rc.1', '2025.01.0-rc.2'])).toEqual([
+        '2025.01.0',
+        '2025.01.0-rc.2',
+        '2025.01.0-rc.1',
+      ]);
+    });
+
+    test('mixed spellings of one version stay adjacent', () => {
+      // 2025.01.0 and 2025.1.0 are the same version; either order between them is
+      // fine, but both must outrank 2025.0.9.
+      expect(order(['2025.1.0', '2025.0.9', '2025.01.0']).slice(-1)).toEqual(['2025.0.9']);
+    });
   });
 
   describe('any non-semver entry → numeric-aware alphabetical fallback', () => {
-    test('falls back when one entry is not semver', () => {
+    test('falls back when one entry carries no version precedence', () => {
       expect(order(['1.0.0', 'nightly', '2.0.0'])).toEqual(['nightly', '2.0.0', '1.0.0']);
     });
 
@@ -58,17 +90,6 @@ describe('sortVersionsDescending', () => {
       ]);
     });
 
-    test('CalVer (YYYY.MM) sorts newest-first, numeric-aware', () => {
-      // Calendar versions are two-segment, so not valid semver -> fallback.
-      // Numeric-aware ordering keeps 2025.10 above 2025.02 (10 > 2), which a
-      // plain string sort would get wrong.
-      expect(order(['2025.02', '2024.12', '2025.10', '2025.01'])).toEqual([
-        '2025.10',
-        '2025.02',
-        '2025.01',
-        '2024.12',
-      ]);
-    });
   });
 
   describe('edge cases', () => {
